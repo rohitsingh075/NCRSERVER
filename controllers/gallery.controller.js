@@ -6,6 +6,7 @@ import path from "path";
 export const uploadGalleryHandler = async (req, res) => {
   const title = req.body.title;
   const files = req.files;
+  console.log(req.files)
 
   if (!title || !files.length) {
     return res.status(400).json({ message: "Title and photos are required" });
@@ -14,15 +15,15 @@ export const uploadGalleryHandler = async (req, res) => {
   try {
     let gallery = await Gallery.findOne({ title });
 
-    const photoFilenames = files.map(file => file.filename);
+    const photoFilePaths = files.map(file => file.path);
 
     if (gallery) {
-      gallery.photos.push(...photoFilenames);
+      gallery.photos.push(...photoFilePaths);
       await gallery.save();
     } else {
       gallery = await Gallery.create({
         title,
-        photos: photoFilenames,
+        photos: photoFilePaths,
       });
     }
 

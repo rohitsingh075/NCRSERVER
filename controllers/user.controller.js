@@ -68,7 +68,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     try {
 
-        console.log("hitting the login route"); 
+        // console.log("hitting the login route"); 
 
         // Get credentials from request body
         const { email, username, password } = req.body;

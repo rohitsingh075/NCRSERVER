@@ -26,7 +26,7 @@ const eventSchema = new mongoose.Schema({
     type: String,
     default: "Admin",
   },
-  imageUrl: {
+  imagePath: {
     type: String, // optional - in case you want to show banners/images
   },
 },{timestamps:true});

@@ -6,11 +6,13 @@ import {
   updateEvent,
   deleteEvent,
 } from "../controllers/event.controller.js";
+import { uploadEventPhoto } from "../middlewares/eventphoto.multer.js";
+
 
 const router = express.Router();
 
 // Route to create a new event
-router.post("/", createEvent);
+router.post("/",uploadEventPhoto.single('eventImage'),  createEvent);
 
 // Route to get all events
 router.get("/", getAllEvents);

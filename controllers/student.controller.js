@@ -31,7 +31,7 @@ export const createStudent = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Basic validation
-  if (!name || !srNo || !session || !studentClass || !section || !address ) {
+  if (!name || !srNo || !session || !studentClass || !section || !address || !dob || !gender ) {
     throw new APIError(400, "Name, Sr No, Session, and Class are required.");
   }
 
@@ -41,11 +41,10 @@ export const createStudent = asyncHandler(async (req, res) => {
     parsedDob = parseDate(dob);
   }
 
+  console.log(srNo); // Log the values for debugging
   // Check for duplicate student by srNo, class, section, and session
   const existingStudent = await Student.findOne({
     srNo,
-    class: studentClass,
-    section,
     session,
   });
 
@@ -94,6 +93,7 @@ export const getStudentById = asyncHandler(async (req, res) => {
 
 // Update student
 export const updateStudent = asyncHandler(async (req, res) => {
+  console.log(id); // Log the values for debugging
   const { id } = req.params;
   const updatedData = req.body;
 
@@ -140,7 +140,7 @@ export const deleteStudent = asyncHandler(async (req, res) => {
 
 // Get students by filters
 export const getStudents = asyncHandler(async (req, res) => {
-  const { name, session, class: studentClass, section, srNo } = req.query;
+  const { name, session, class: studentClass, section, srNo, gender } = req.query;
 
   const filter = {};
   if (name) filter.name = { $regex: name, $options: "i" }; // Case-insensitive search
@@ -148,6 +148,7 @@ export const getStudents = asyncHandler(async (req, res) => {
   if (studentClass) filter.class = studentClass;
   if (section) filter.section = section;
   if (srNo) filter.srNo = srNo;
+  if (gender) filter.gender = gender;
 
   if (Object.keys(filter).length === 0) {
     throw new APIError(400, "At least one filter (session, class, section, or srNo) is required.");

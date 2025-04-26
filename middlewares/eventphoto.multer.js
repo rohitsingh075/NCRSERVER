@@ -2,6 +2,10 @@
 import multer from "multer";
 import path from "path";
 
+
+const check=()=>{
+  console.log("Event photo upload middleware initialized.");
+}
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./uploads/eventPhotos");
@@ -22,8 +26,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-export const uploadEventPhoto = multer({
-  storage,
+export const uploadEventPhoto = multer(
+  
+  {
+  check,
+  storage: storage,
+  // destination: "./uploads/eventPhotos",
   fileFilter,
-  limits: { fileSize: 3 * 1024 * 1024 } // Max 3MB
+  limits: { fileSize: 20 * 1024 * 1024 } // Max 20MB
 });

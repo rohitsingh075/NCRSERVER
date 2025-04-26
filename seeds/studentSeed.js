@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { Student } from "../models/student.model.js"; // adjust path if needed
+import xlsx from "xlsx";
+import path from "path";
 
 const classes = ["Nursery", "KG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 const sections = ["A", "B", "C", "D"];
@@ -10,40 +12,58 @@ const generateRollNo = (className, section, index) => {
   return `${className}-${section}-${index + 1}`;
 };
 
-// Generate data for 1000 students
-const generateStudent = (index) => {
-  const classIndex = Math.floor(Math.random() * classes.length);
-  const section = sections[Math.floor(Math.random() * sections.length)];
-
-  return {
-    studentId: `NCR-${(index + 1000).toString()}`, // Unique student ID (NCR-1001, NCR-1002, etc.)
-    name: `Student ${index + 1}`,
-    fatherName: `Father ${index + 1}`,
-    motherName: `Mother ${index + 1}`,
-    srNo: generateRollNo(classes[classIndex], section, index),
-    session: session,
-    class: classes[classIndex],
-    section: section,
-    dob: new Date(2005, 5, 15), // Fixed date of birth (You can modify)
-    gender: index % 2 === 0 ? "Male" : "Female", // Alternate gender
-    address: `Address ${index + 1}`,
-    mobileNo: `98${(Math.random() * 100000000).toFixed(0)}`, // Random mobile number
-    photo: "", // Will be uploaded later
-    transferCertificate: "", // Empty for now
-    admissionDate: new Date(), // Current date for admission
-  };
+// Function to read data from an Excel file
+const readExcelFile = (filePath) => {
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0]; // Assuming data is in the first sheet
+  const sheet = workbook.Sheets[sheetName];
+  return xlsx.utils.sheet_to_json(sheet); // Convert sheet to JSON
 };
 
 const seed = async () => {
-  // await mongoose.connect("mongodb+srv://arpdevproductions:RsL263pntwVPsjnk@ncrc-website.mxex5wq.mongodb.net/NCRC-WEBSITE");
-  await mongoose.connect("mongodb://localhost:27017/ncrc");
+  try {
+    // Connect to MongoDB
+    await mongoose.connect("mongodb+srv://arpdevproductions:RsL263pntwVPsjnk@ncrc-website.mxex5wq.mongodb.net/NCRC-WEBSITE");
 
-  await Student.deleteMany({}); // optional: clear previous data
-  const students = Array.from({ length: 1000 }, (_, i) => generateStudent(i));
-  await Student.insertMany(students);
+    // Clear previous data (optional)
+    // await Student.deleteMany({});
+    // console.log("✅ Previous student data cleared.");
 
-  console.log("✅ 1000 Students Seeded");
-  mongoose.disconnect();
+    // Path to the Excel file (same directory as this script)
+    const excelFilePath = path.resolve(process.cwd(), "students.xlsx"); // Replace with your Excel file name
+
+    // Read data from the Excel file
+    const studentsData = readExcelFile(excelFilePath);
+
+    // Transform data to match the Student schema
+    const students = studentsData.map((data, index) => ({
+      studentId: data.studentId || `NCR-${(index + 1000).toString()}`, // Use studentId from Excel or generate one
+      name: data.name || `Student ${index + 1}`,
+      fatherName: data.fatherName || `Father ${index + 1}`,
+      motherName: data.motherName || `Mother ${index + 1}`,
+      srNo: data.srNo || `SR-${index + 1}`,
+      session: data.session || "2024-25",
+      class: data.class || "1",
+      section: data.section || "A",
+      dob: data.dob ? new Date(data.dob) : new Date(2005, 5, 15), // Parse DOB if provided
+      gender: data.gender || (index % 2 === 0 ? "Male" : "Female"),
+      address: data.address || `Address ${index + 1}`,
+      mobileNo: data.mobileNo || `98${(Math.random() * 100000000).toFixed(0)}`,
+      photo: data.photo || "",
+      transferCertificate: data.transferCertificate || "",
+      admissionDate: data.admissionDate ? new Date(data.admissionDate) : new Date(),
+    }));
+
+    // Insert data into the Student collection
+    await Student.insertMany(students);
+    console.log(`✅ ${students.length} Students Seeded`);
+
+    // Disconnect from MongoDB
+    mongoose.disconnect();
+  } catch (error) {
+    console.error("❌ Error seeding students:", error.message);
+    mongoose.disconnect();
+  }
 };
 
 seed();

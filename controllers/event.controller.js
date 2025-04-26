@@ -5,13 +5,15 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Create a new event
 export const createEvent = asyncHandler(async (req, res) => {
-  const { name, date, time, description, location, organizer, imageUrl } = req.body;
+  const { name, date, time, description, location, organizer } = req.body;
 
   // Validate required fields
   if (!name || !date || !time || !description) {
     throw new APIError(400, "Missing required fields: name, date, time, or description");
   }
-
+  console.log("Event data:", req.file);
+  const imagePath = req.file.path;
+  console.log("Image path:", imagePath);
   const event = new Event({
     name,
     date,
@@ -19,10 +21,12 @@ export const createEvent = asyncHandler(async (req, res) => {
     description,
     location: location || "To be announced",
     organizer: organizer || "Admin",
-    imageUrl,
+    imagePath,
   });
 
+  console.log("event:", event);
   const savedEvent = await event.save();
+  // console.log("event:", event);
   res.status(201).json(new APIresponse(201, savedEvent, "Event created successfully"));
 });
 
@@ -102,7 +106,6 @@ export const uploadEventPhotoHandler = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No event photo uploaded." });
     }
-
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ error: "Event not found." });

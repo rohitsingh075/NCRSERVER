@@ -20,7 +20,8 @@ router.get("/view", viewGalleries);
 router.delete("/:title/:filename", deletePhotoFromGallery);
 
 // Delete an entire gallery
-router.delete("/delete/:id", deleteEntireGallery);
+router.delete("/delete/:title", deleteEntireGallery);
 
 
 export default router;
+
