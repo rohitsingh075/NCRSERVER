@@ -1,6 +1,6 @@
 import { Event } from "../models/events.model.js";
 import { APIresponse } from "../utils/APIresponse.js";
-import { APIError } from "../utils/APIError.js";
+import { APIError } from "../utils/APIerror.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Create a new event

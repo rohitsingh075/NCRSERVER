@@ -1,6 +1,6 @@
 import { Student } from "../models/student.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { APIError } from "../utils/APIError.js";
+import { APIError } from "../utils/APIerror.js";
 
 // Helper function to parse DD-MM-YYYY to a valid Date object
 const parseDate = (dateString) => {
