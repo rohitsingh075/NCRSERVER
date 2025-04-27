@@ -104,13 +104,15 @@ const loginUser = asyncHandler(async (req, res) => {
         if (!isPasswordValid) {
             throw new APIError(401, "Invalid credentials");
         }
-        
+        console.log("generating token");
         // Generate JWT token
         const token = jwt.sign({
             email: user.email,
             _id: user._id
         }, process.env.JWT_KEY, { expiresIn: "1d" });
         res.cookie("token",token);
+        console.log("generated token",token);
+
         
         
         res.send('logged in successfully ');

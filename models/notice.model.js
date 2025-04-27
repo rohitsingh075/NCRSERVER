@@ -16,7 +16,7 @@ const noticeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, // Defaults to current date
   },
-  attachmentUrl: {
+  noticeUpload: {
     type: String, // URL to PDF/image or any file
   },
   issuedBy: {

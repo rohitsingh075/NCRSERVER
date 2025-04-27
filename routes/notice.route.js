@@ -8,10 +8,13 @@ import {
   getNoticesByDate,  
 } from "../controllers/notice.controller.js";
 
+import { uploadNotice } from "../middlewares/uploadNotice.multer.js";
+
+
 const router = express.Router();
 
 // Route to create a new notice
-router.post("/", createNotice);
+router.post("/",uploadNotice.single('noticeUpload'), createNotice);
 
 // Route to get all notices
 router.get("/", getAllNotices);

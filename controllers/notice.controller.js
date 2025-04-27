@@ -5,20 +5,33 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Create a new notice
 export const createNotice = asyncHandler(async (req, res) => {
-  const { title, description, attachmentUrl, issuedBy, important, tags } = req.body;
+  console.log("REQUEST BODY:", req.body);
+  console.log("REQUEST FILE:", req.file);
+  
+  const { title, description, issuedBy, important, tags } = req.body;
 
   // Validate required fields
   if (!title || !description) {
     throw new APIError(400, "Missing required fields: title or description");
   }
+  
+  // Get the file path from req.file
+  const noticeUpload = req.file ? req.file.path : null;
+  console.log("File path:", noticeUpload);
+
+  // Handle tags - ensure they're an array
+  let parsedTags = [];
+  if (tags) {
+    parsedTags = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim());
+  }
 
   const notice = new Notice({
     title,
     description,
-    attachmentUrl,
     issuedBy: issuedBy || "Admin",
-    important: important || false,
-    tags,
+    important: important === true || important === "true",
+    tags: parsedTags,
+    noticeUpload,
   });
 
   const savedNotice = await notice.save();
@@ -151,3 +164,32 @@ export const deleteNotice = asyncHandler(async (req, res) => {
 
   res.status(200).json(new APIresponse(200, null, "Notice deleted successfully"));
 });
+
+export const uploadNoticeFileHandler = async (req, res) => {
+  try {
+    const {id} = req.params.id;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No Photo/File uploaded." });
+    }
+    console.log("File :", req.file); // Log the uploaded file for debugging
+    const notice = await Notice.findById(id);
+    if (!notice) {
+      return res.status(404).json({ error: "Event not found." });
+    }
+
+    // Save photo filename in event document
+    notice.photo = req.file.filename;
+    await notice.save();
+
+    res.status(200).json({
+      message: "Event photo uploaded and updated.",
+      file: req.file,
+      notice,
+    });
+
+  } catch (error) {
+    console.error("Upload Event Photo Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
