@@ -3,7 +3,8 @@ import {
   uploadGalleryHandler,
   deletePhotoFromGallery,
   viewGalleries,
-  deleteEntireGallery
+  deleteEntireGallery,
+  getGalleryById
 } from "../controllers/gallery.controller.js";
 import { uploadGalleryPhotos } from "../middlewares/uploadGalleryPhotos.multer.js";
 
@@ -16,11 +17,13 @@ router.post("/upload", uploadGalleryPhotos.array("photos", 100), uploadGalleryHa
 // View galleries
 router.get("/view", viewGalleries);
 
+router.get("/view/:id",getGalleryById)
+
 // Delete a specific photo
 router.delete("/:title/:filename", deletePhotoFromGallery);
 
 // Delete an entire gallery
-router.delete("/delete/:title", deleteEntireGallery);
+router.delete("/delete/:id", deleteEntireGallery);
 
 
 export default router;

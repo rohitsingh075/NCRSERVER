@@ -34,6 +34,24 @@ export const uploadGalleryHandler = async (req, res) => {
   }
 };
 
+export const getGalleryById = async (req, res) => {
+  const { id } = req.params;
+  // console.log(id);
+
+  try {
+    const gallery = await Gallery.findById(id);
+    if (!gallery) {
+      return res.status(404).json({ message: "Gallery not found" });
+    }
+    console.log(gallery)
+
+    res.status(200).json({ gallery });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
 // View all galleries
 export const viewGalleries = async (req, res) => {
   try {
@@ -68,10 +86,14 @@ export const deletePhotoFromGallery = async (req, res) => {
 
 // Delete entire gallery
 export const deleteEntireGallery = async (req, res) => {
-  const { title } = req.params;
+  console.log("hitting route")
+  const { id } = req.params;
+  console.log(id);
+  console.log("hello");
 
   try {
-    const gallery = await Gallery.findOne({ title });
+    const gallery = await Gallery.findById(id);
+    const title=gallery.title;
     if (!gallery) return res.status(404).json({ message: "Gallery not found" });
 
     const dir = `./uploads/galleryPhotos/${title}`;

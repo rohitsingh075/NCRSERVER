@@ -39,6 +39,7 @@ export const getAllEvents = asyncHandler(async (req, res) => {
 // Get a single event by ID
 export const getEventById = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  // console.log(id);
 
   // Validate ID
   if (!id) {
