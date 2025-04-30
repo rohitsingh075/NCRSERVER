@@ -26,7 +26,7 @@ router.get("/date", getNoticesByDate);
 router.get("/:id", getNoticeById);
 
 // Route to update a notice by ID
-router.put("/:id", updateNotice);
+router.put("/:id",uploadNotice.single('noticeUpload'), updateNotice);
 
 // Route to delete a notice by ID
 router.delete("/:id", deleteNotice);

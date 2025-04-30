@@ -99,54 +99,65 @@ export const getNoticesByDate = asyncHandler(async (req, res) => {
 // Update a notice by ID
 // Update a notice by ID
 export const updateNotice = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { title, description, attachmentUrl, issuedBy, important, tags, date } = req.body;
-  
-    // Validate ID
-    if (!id) {
-      throw new APIError(400, "Notice ID is required");
+  const { id } = req.params;
+  console.log("ID:", id); // Log the ID for debugging
+  const { title, description, issuedBy, important, tags, date } = req.body;
+
+  // Validate ID
+  if (!id) {
+    throw new APIError(400, "Notice ID is required");
+  }
+
+  // Validate required fields if provided
+  if (!title || !description) {
+    throw new APIError(400, "Required fields cannot be empty");
+  }
+
+  // Validate date format if provided
+  let parsedDate = null;
+  if (date) {
+    const parseDate = (dateString) => {
+      const [year, month, day] = dateString.split("-"); // Expecting YYYY-MM-DD format
+      const parsed = new Date(Date.UTC(year, month - 1, day)); // Use UTC to avoid time zone issues
+      return parsed;
+    };
+    parsedDate = parseDate(date);
+    if (isNaN(parsedDate)) {
+      throw new APIError(400, "Invalid date format. Use YYYY-MM-DD.");
     }
-  
-    // Validate required fields if provided
-    if (title === "" || description === "") {
-      throw new APIError(400, "Required fields cannot be empty");
-    }
-  
-    // Validate date format if provided
-    let parsedDate = null;
-    if (date) {
-      const parseDate = (dateString) => {
-        const [day, month, year] = dateString.split("-");
-        const parsed = new Date(Date.UTC(year, month - 1, day)); // Use UTC to avoid time zone issues
-        return parsed;
-      };
-      parsedDate = parseDate(date);
-      if (isNaN(parsedDate)) {
-        throw new APIError(400, "Invalid date format. Use DD-MM-YYYY.");
-      }
-    }
-  
-    const updatedNotice = await Notice.findByIdAndUpdate(
-      id,
-      {
-        title,
-        description,
-        attachmentUrl,
-        issuedBy,
-        important,
-        tags,
-        ...(parsedDate && { date: parsedDate }),
-      },
-      { new: true, runValidators: true }
-    );
-  
-    if (!updatedNotice) {
-      throw new APIError(404, "Notice not found");
-    }
-  
-    res.status(200).json(new APIresponse(200, updatedNotice, "Notice updated successfully"));
+  }
+
+  // Handle tags - ensure they're an array
+  let parsedTags = [];
+  if (tags) {
+    parsedTags = Array.isArray(tags) ? tags : tags.split(",").map((tag) => tag.trim());
+  }
+
+  // Handle file upload
+  const noticeUpload = req.file ? req.file.path : undefined;
+
+  // Prepare the update object
+  const updateData = {
+    title,
+    description,
+    issuedBy,
+    important: important === true || important === "true",
+    tags: parsedTags,
+    ...(parsedDate && { date: parsedDate }),
+    ...(noticeUpload && { noticeUpload }), // Only include noticeUpload if a file is uploaded
+  };
+
+  const updatedNotice = await Notice.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true,
   });
 
+  if (!updatedNotice) {
+    throw new APIError(404, "Notice not found");
+  }
+
+  res.status(200).json(new APIresponse(200, updatedNotice, "Notice updated successfully"));
+});
   
 // Delete a notice by ID
 export const deleteNotice = asyncHandler(async (req, res) => {

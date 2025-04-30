@@ -4,13 +4,51 @@ import { APIError } from "../utils/APIerror.js";
 
 // Helper function to parse DD-MM-YYYY to a valid Date object
 const parseDate = (dateString) => {
-  const [day, month, year] = dateString.split("-");
-  const parsedDate = new Date(Date.UTC(year, month - 1, day)); // Use UTC to avoid time zone issues
-  if (isNaN(parsedDate)) {
-    throw new APIError(400, "Invalid date format. Use DD-MM-YYYY.");
+  let day, month, year;
+
+  // Remove time if present (e.g., "2025-01-01T00:00:00.000Z" → "2025-01-01")
+  if (dateString.includes("T")) {
+    dateString = dateString.split("T")[0];
   }
+
+  // Case 1: ddmmyyyy (e.g., 01012025)
+  if (/^\d{8}$/.test(dateString)) {
+    const possibleDay = parseInt(dateString.slice(0, 2));
+    const possibleMonth = parseInt(dateString.slice(2, 4));
+
+    if (possibleDay <= 31 && possibleMonth <= 12) {
+      day = dateString.slice(0, 2);
+      month = dateString.slice(2, 4);
+      year = dateString.slice(4, 8);
+    } else {
+      // Assume reverse: yyyymmdd (e.g., 20250101)
+      year = dateString.slice(0, 4);
+      month = dateString.slice(4, 6);
+      day = dateString.slice(6, 8);
+    }
+  }
+  // Case 2: dd-mm-yyyy
+  else if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+    [day, month, year] = dateString.split("-");
+  }
+  // Case 3: yyyy-mm-dd
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    [year, month, day] = dateString.split("-");
+  }
+  else {
+    throw new APIError(400, "Invalid date format. Use DD-MM-YYYY, YYYY-MM-DD, DDMMYYYY, YYYYMMDD, or ISO format.");
+  }
+
+  const parsedDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+
+  if (isNaN(parsedDate.getTime())) {
+    throw new APIError(400, "Invalid date.");
+  }
+
   return parsedDate;
 };
+
+
 
 // Create a new student
 export const createStudent = asyncHandler(async (req, res) => {
@@ -98,7 +136,7 @@ export const updateStudent = asyncHandler(async (req, res) => {
   const updatedData = req.body;
 
   if (!id) throw new APIError(400, "Student ID is required");
-
+  console.log(updatedData.dob);
   // Parse the date of birth if provided
   if (updatedData.dob) {
     updatedData.dob = parseDate(updatedData.dob);
