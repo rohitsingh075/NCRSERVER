@@ -9,6 +9,7 @@ import noticeRoutes from "./routes/notice.route.js"
 import studentRoutes from "./routes/student.route.js"
 import galleryRoutes from "./routes/gallery.route.js"
 import { fileURLToPath } from 'url'
+import verifyUser from "./routes/verify.route.js"
 
 const app = express();
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // app.use(uploadRoutes);
 
 app.use("/",userRouter);
+app.use("/user",verifyUser);
 app.use("/events",eventRoutes);
 app.use("/notices",noticeRoutes);
 app.use("/students",studentRoutes);

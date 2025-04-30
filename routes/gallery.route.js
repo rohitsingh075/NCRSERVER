@@ -20,7 +20,7 @@ router.get("/view", viewGalleries);
 router.get("/view/:id",getGalleryById)
 
 // Delete a specific photo
-router.delete("/:title/:filename", deletePhotoFromGallery);
+// router.delete("/:title/:filename", deletePhotoFromGallery);
 
 // Delete an entire gallery
 router.delete("/delete/:id", deleteEntireGallery);

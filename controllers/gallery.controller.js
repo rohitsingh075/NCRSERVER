@@ -86,7 +86,7 @@ export const deletePhotoFromGallery = async (req, res) => {
 
 // Delete entire gallery
 export const deleteEntireGallery = async (req, res) => {
-  console.log("hitting route")
+  console.log("hitting route");
   const { id } = req.params;
   console.log(id);
   console.log("hello");

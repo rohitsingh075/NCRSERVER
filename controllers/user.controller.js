@@ -1,9 +1,10 @@
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { APIError } from "../utils/APIerror.js";
-import {APIresponse} from "../utils/APIresponse.js"
+import { APIresponse } from "../utils/APIresponse.js"
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -57,7 +58,7 @@ const registerUser = asyncHandler(async (req, res) => {
         );
     } catch (error) {
         console.log("Error occured at user.controller.js at /register route", error);
-        throw new APIError(500, "Something went wrong while registering the user.",error.message);
+        throw new APIError(500, "Something went wrong while registering the user.", error.message);
     }
 });
 
@@ -104,20 +105,26 @@ const loginUser = asyncHandler(async (req, res) => {
         if (!isPasswordValid) {
             throw new APIError(401, "Invalid credentials");
         }
-        console.log("generating token");
+        // console.log("generating token");
         // Generate JWT token
+
+
         const token = jwt.sign({
             email: user.email,
             _id: user._id
         }, process.env.JWT_KEY, { expiresIn: "1d" });
-        res.cookie("token",token);
-        console.log("generated token",token);
 
-        
-        
+        //storing the token is res
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            path:"/",
+            maxAge: 24 * 60 * 60 * 1000,//1 day
+        });
+
+        console.log("generated token", token);
         res.send('logged in successfully ');
-
-        
     }
     catch (error) {
         console.log("Error occurred at user.controller.js at /login route", error);
@@ -135,22 +142,23 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
     try {
-        // Clear the token cookie
+        const token1=req.cookies.token;
+        console.log("Cookies before clearing:", token1);
         res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-            sameSite: "strict",
+            secure: false,
+            sameSite: "Lax",
+            path: "/"
         });
-
-        // Send success response
+        
+        console.log("Cookies after clearing:", req.cookies.token);
         res.status(200).json(new APIresponse(200, null, "User logged out successfully"));
     } catch (error) {
         console.log("Error occurred at user.controller.js at /logout route", error);
-
-        // Handle unexpected errors
         throw new APIError(500, "Something went wrong while logging out");
     }
 });
+
 
 export { loginUser, registerUser, logoutUser };
 

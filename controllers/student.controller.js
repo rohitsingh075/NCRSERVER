@@ -93,8 +93,8 @@ export const getStudentById = asyncHandler(async (req, res) => {
 
 // Update student
 export const updateStudent = asyncHandler(async (req, res) => {
-  console.log(id); // Log the values for debugging
   const { id } = req.params;
+  console.log(id); // Log the values for debugging
   const updatedData = req.body;
 
   if (!id) throw new APIError(400, "Student ID is required");
