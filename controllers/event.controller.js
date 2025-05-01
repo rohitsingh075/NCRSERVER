@@ -57,7 +57,7 @@ export const getEventById = asyncHandler(async (req, res) => {
 // Update an event by ID
 export const updateEvent = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, date, time, description, location, organizer, imageUrl } = req.body;
+  const { name, date, time, description, location, organizer } = req.body;
 
   // Validate ID
   if (!id) {
@@ -65,15 +65,28 @@ export const updateEvent = asyncHandler(async (req, res) => {
   }
 
   // Validate required fields if provided
-  if (name === "" || date === "" || time === "" || description === "") {
+  if (!name || !date || !time || !description) {
     throw new APIError(400, "Required fields cannot be empty");
   }
 
-  const updatedEvent = await Event.findByIdAndUpdate(
-    id,
-    { name, date, time, description, location, organizer, imageUrl },
-    { new: true, runValidators: true }
-  );
+  // Handle file upload
+  const imagePath = req.file ? req.file.path : undefined;
+
+  // Prepare the update object
+  const updateData = {
+    name,
+    date,
+    time,
+    description,
+    location: location || "To be announced",
+    organizer: organizer || "Admin",
+    ...(imagePath && { imagePath }), // Only include imagePath if a new file is uploaded
+  };
+
+  const updatedEvent = await Event.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true,
+  });
 
   if (!updatedEvent) {
     throw new APIError(404, "Event not found");

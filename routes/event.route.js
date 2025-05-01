@@ -21,7 +21,7 @@ router.get("/", getAllEvents);
 router.get("/:id", getEventById);
 
 // Route to update an event by ID
-router.put("/:id", updateEvent);
+router.put("/:id",uploadEventPhoto.single('eventImage'), updateEvent);
 
 // Route to delete an event by ID
 router.delete("/:id", deleteEvent);

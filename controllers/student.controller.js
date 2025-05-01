@@ -65,11 +65,10 @@ export const createStudent = asyncHandler(async (req, res) => {
     gender,
     address,
     mobileNo,
-    transferCertificate,
   } = req.body;
 
   // Basic validation
-  if (!name || !srNo || !session || !studentClass || !section || !address || !dob || !gender ) {
+  if (!name || !srNo || !session || !studentClass || !section || !address || !dob || !gender) {
     throw new APIError(400, "Name, Sr No, Session, and Class are required.");
   }
 
@@ -80,6 +79,7 @@ export const createStudent = asyncHandler(async (req, res) => {
   }
 
   console.log(srNo); // Log the values for debugging
+
   // Check for duplicate student by srNo, class, section, and session
   const existingStudent = await Student.findOne({
     srNo,
@@ -89,6 +89,9 @@ export const createStudent = asyncHandler(async (req, res) => {
   if (existingStudent) {
     throw new APIError(409, "Student with the same Sr No already exists.");
   }
+
+  // Handle transferCertificate file
+  const transferCertificate = req.file ? req.file.path : undefined;
 
   const newStudent = new Student({
     name,
@@ -102,7 +105,7 @@ export const createStudent = asyncHandler(async (req, res) => {
     gender,
     address,
     mobileNo,
-    transferCertificate,
+    transferCertificate, // Save the file name to the database
   });
 
   await newStudent.save();
@@ -136,10 +139,15 @@ export const updateStudent = asyncHandler(async (req, res) => {
   const updatedData = req.body;
 
   if (!id) throw new APIError(400, "Student ID is required");
-  console.log(updatedData.dob);
+
   // Parse the date of birth if provided
   if (updatedData.dob) {
     updatedData.dob = parseDate(updatedData.dob);
+  }
+
+  // Handle transferCertificate file
+  if (req.file) {
+    updatedData.transferCertificate = req.file.path; // Save the file name to the database
   }
 
   const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, {
