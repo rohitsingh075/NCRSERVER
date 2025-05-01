@@ -40,9 +40,33 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phoneNo:{
+    type: String,
+    default: null,
+  },
   address: {
     type: String,
     required: true,
+  },
+  rlyWard:{
+    type: String,
+    default: null,
+  },
+  caste:{
+    type: String,
+    default: null,
+  },
+  religion:{
+    type: String,
+    default: null,
+  },
+  aadharNo:{
+    type: String,
+    default: null,
+  },
+  house:{
+    type: String,
+    default: null,
   },
   transferCertificate: {
     type: String,

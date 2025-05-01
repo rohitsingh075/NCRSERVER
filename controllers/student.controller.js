@@ -48,11 +48,9 @@ const parseDate = (dateString) => {
   return parsedDate;
 };
 
-
-
 // Create a new student
 export const createStudent = asyncHandler(async (req, res) => {
-  console.log("Request body:", req.body); // Log the request body for debugging
+console.log("Request body:", req.body); // Log the request body for debugging
   const {
     name,
     srNo,
@@ -64,12 +62,17 @@ export const createStudent = asyncHandler(async (req, res) => {
     dob,
     gender,
     address,
-    mobileNo,
+    phoneNo,
+    rlyWard,
+    caste,
+    aadharNo,
+    house,
+    religion
   } = req.body;
 
   // Basic validation
   if (!name || !srNo || !session || !studentClass || !section || !address || !dob || !gender) {
-    throw new APIError(400, "Name, Sr No, Session, and Class are required.");
+    throw new APIError(400, "Name, Sr No, Session, Class, Section, Address, DOB, and Gender are required.");
   }
 
   // Parse the date of birth if provided
@@ -78,7 +81,7 @@ export const createStudent = asyncHandler(async (req, res) => {
     parsedDob = parseDate(dob);
   }
 
-  console.log(srNo); // Log the values for debugging
+console.log(srNo); // Log the values for debugging
 
   // Check for duplicate student by srNo, class, section, and session
   const existingStudent = await Student.findOne({
@@ -104,8 +107,13 @@ export const createStudent = asyncHandler(async (req, res) => {
     dob: parsedDob,
     gender,
     address,
-    mobileNo,
-    transferCertificate, // Save the file name to the database
+    phoneNo,
+    rlyWard,
+    caste,
+    aadharNo,
+    house,
+    religion,
+    transferCertificate,
   });
 
   await newStudent.save();
@@ -135,7 +143,6 @@ export const getStudentById = asyncHandler(async (req, res) => {
 // Update student
 export const updateStudent = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  console.log(id); // Log the values for debugging
   const updatedData = req.body;
 
   if (!id) throw new APIError(400, "Student ID is required");
@@ -147,7 +154,7 @@ export const updateStudent = asyncHandler(async (req, res) => {
 
   // Handle transferCertificate file
   if (req.file) {
-    updatedData.transferCertificate = req.file.path; // Save the file name to the database
+    updatedData.transferCertificate = req.file.path;
   }
 
   const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, {
@@ -186,7 +193,18 @@ export const deleteStudent = asyncHandler(async (req, res) => {
 
 // Get students by filters
 export const getStudents = asyncHandler(async (req, res) => {
-  const { name, session, class: studentClass, section, srNo, gender } = req.query;
+  const {
+    name,
+    session,
+    class: studentClass,
+    section,
+    srNo,
+    gender,
+    rlyWard,
+    caste,
+    aadharNo,
+    house,
+  } = req.query;
 
   const filter = {};
   if (name) filter.name = { $regex: name, $options: "i" }; // Case-insensitive search
@@ -195,10 +213,10 @@ export const getStudents = asyncHandler(async (req, res) => {
   if (section) filter.section = section;
   if (srNo) filter.srNo = srNo;
   if (gender) filter.gender = gender;
-
-  if (Object.keys(filter).length === 0) {
-    throw new APIError(400, "At least one filter (session, class, section, or srNo) is required.");
-  }
+  if (rlyWard) filter.rlyWard = rlyWard;
+  if (caste) filter.caste = caste;
+  if (aadharNo) filter.aadharNo = aadharNo;
+  if (house) filter.house = house;
 
   const students = await Student.find(filter);
 
@@ -228,7 +246,7 @@ export const getAllStudents = asyncHandler(async (req, res) => {
   });
 });
 
-
+// Upload Transfer Certificate
 export const uploadTCHandler = async (req, res) => {
   try {
     const studentId = req.params.id;
@@ -251,7 +269,6 @@ export const uploadTCHandler = async (req, res) => {
       file: req.file,
       student,
     });
-
   } catch (error) {
     console.error("Upload TC Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
