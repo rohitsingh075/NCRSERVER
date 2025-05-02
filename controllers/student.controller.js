@@ -50,7 +50,7 @@ const parseDate = (dateString) => {
 
 // Create a new student
 export const createStudent = asyncHandler(async (req, res) => {
-console.log("Request body:", req.body); // Log the request body for debugging
+  console.log("Request body:", req.body); // Log the request body for debugging
   const {
     name,
     srNo,
@@ -67,7 +67,8 @@ console.log("Request body:", req.body); // Log the request body for debugging
     caste,
     aadharNo,
     house,
-    religion
+    religion,
+    schoolLeavingDate
   } = req.body;
 
   // Basic validation
@@ -75,20 +76,19 @@ console.log("Request body:", req.body); // Log the request body for debugging
     throw new APIError(400, "Name, Sr No, Session, Class, Section, Address, DOB, and Gender are required.");
   }
 
-  // Parse the date of birth if provided
-  let parsedDob = null;
-  if (dob) {
-    parsedDob = parseDate(dob);
+  // Parse DOB
+  let parsedDob = parseDate(dob);
+
+  // Parse School Leaving Date (optional)
+  let parsedSchoolLeavingDate = null;
+  if (schoolLeavingDate && schoolLeavingDate !== "null" && schoolLeavingDate.trim() !== "") {
+    parsedSchoolLeavingDate = parseDate(schoolLeavingDate);
   }
 
-console.log(srNo); // Log the values for debugging
+  console.log(srNo); // Log for debugging
 
-  // Check for duplicate student by srNo, class, section, and session
-  const existingStudent = await Student.findOne({
-    srNo,
-    session,
-  });
-
+  // Check for duplicate student by srNo and session
+  const existingStudent = await Student.findOne({ srNo, session });
   if (existingStudent) {
     throw new APIError(409, "Student with the same Sr No already exists.");
   }
@@ -114,6 +114,7 @@ console.log(srNo); // Log the values for debugging
     house,
     religion,
     transferCertificate,
+    schoolLeavingDate: parsedSchoolLeavingDate,
   });
 
   await newStudent.save();
@@ -124,6 +125,7 @@ console.log(srNo); // Log the values for debugging
     student: newStudent,
   });
 });
+
 
 // Get student by ID
 export const getStudentById = asyncHandler(async (req, res) => {
@@ -152,6 +154,13 @@ export const updateStudent = asyncHandler(async (req, res) => {
     updatedData.dob = parseDate(updatedData.dob);
   }
 
+  // Parse the schoolLeavingDate if provided
+  if (updatedData.schoolLeavingDate && updatedData.schoolLeavingDate !== "null" && updatedData.schoolLeavingDate.trim() !== "") {
+    updatedData.schoolLeavingDate = parseDate(updatedData.schoolLeavingDate);
+  } else {
+    updatedData.schoolLeavingDate = null;
+  }
+
   // Handle transferCertificate file
   if (req.file) {
     updatedData.transferCertificate = req.file.path;
@@ -159,7 +168,6 @@ export const updateStudent = asyncHandler(async (req, res) => {
 
   const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, {
     new: true,
-    runValidators: true,
   });
 
   if (!updatedStudent) {
@@ -172,6 +180,7 @@ export const updateStudent = asyncHandler(async (req, res) => {
     student: updatedStudent,
   });
 });
+
 
 // Delete student
 export const deleteStudent = asyncHandler(async (req, res) => {
