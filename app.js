@@ -23,9 +23,14 @@ const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(cors({
-    origin: clientUrl,
-    credentials:true
-}))
+    origin: [
+        "https://ncrcollegetdledu.org.in",
+        "https://www.ncrcollegetdledu.org.in"
+    ],
+    credentials: true
+}));
+
+
 app.use(express.json({}))
 app.use(express.urlencoded({extended:true,}))
 app.use(cookieParser());
