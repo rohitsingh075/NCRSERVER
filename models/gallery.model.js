@@ -10,6 +10,8 @@ const gallerySchema = new mongoose.Schema({
       type: String, // filenames
     }
   ],
+ 
+  
   createdAt: {
     type: Date,
     default: Date.now,

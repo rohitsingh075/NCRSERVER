@@ -24,6 +24,7 @@ export const uploadGalleryHandler = async (req, res) => {
       gallery = await Gallery.create({
         title,
         photos: photoFilePaths,
+        
       });
     }
 
@@ -71,7 +72,8 @@ export const deletePhotoFromGallery = async (req, res) => {
     const gallery = await Gallery.findOne({ title });
     if (!gallery) return res.status(404).json({ message: "Gallery not found" });
 
-    gallery.photos = gallery.photos.filter(photo => photo !== filename);
+    // gallery.photos = gallery.photos.filter(photo => photo !== filename);
+    gallery.photos = gallery.photos.filter(photo => path.basename(photo) !== filename);
     await gallery.save();
 
     if (fs.existsSync(filePath)) {
